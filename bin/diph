@@ -1,0 +1,54 @@
+#!/usr/bin/env python
+
+import getpass
+import sys
+import os
+
+import diph.diph as diph
+
+def usage():
+    print >> sys.stderr, """usage: diph COMMAND [OPTIONS]
+
+  encrypt PATH [PATH]
+  decrypt PATH
+""".strip()
+
+
+def main():
+    try:
+        cmd, rest = sys.argv[1], sys.argv[2:]
+    except:
+        usage()
+        sys.exit(1)
+
+    if cmd == 'encrypt':
+        try:
+            cur = file(rest[0], 'r').read()
+            if len(rest) > 1:
+                old = file(rest[1], 'r').read()
+            else:
+                old = ''
+        except:
+            usage()
+            sys.exit(1)
+
+        password = getpass.getpass()
+        diph.encrypt(password, cur, old, out=sys.stdout)
+    elif cmd == 'decrypt':
+        try:
+            cur = file(rest[0], 'r').read()
+        except:
+            usage()
+            sys.exit(1)
+
+        password = getpass.getpass()
+        diph.decrypt(password, cur, out=sys.stdout)
+    else:
+        usage()
+        sys.exit(1)
+
+    sys.exit(0)
+
+
+if __name__ == '__main__':
+    main()
