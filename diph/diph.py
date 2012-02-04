@@ -215,13 +215,17 @@ def encrypt(password, cur, old, decrypt=False, out=sys.stdout):
                 continue
             fields = line_.split(' ')
 
-            if fields[0] == '?k':
+            if fields[0] == '??':
+                # Current file format version
+                assert fields[1] == 'diph1'
+
+            elif fields[0] == '?k':
                 k_blob = line_.strip()
                 blob = decrypt_blob(password, base64.b64decode(fields[1]))
                 key, nonce = blob[:AES_KEY_SIZE], blob[AES_KEY_SIZE:]
                 aes = AES.new(key)
 
-            if fields[0] == '?c':
+            elif fields[0] == '?c':
                 cnt = int(fields[1])
                 plain = crypt_ctr(aes, nonce, cnt, base64.b64decode(fields[2]))
                 max_cnt = max(max_cnt, cnt)
@@ -251,6 +255,8 @@ def encrypt(password, cur, old, decrypt=False, out=sys.stdout):
             cnt += CTR_STEP
 
     # Output
+    print >> out, '?? diph1'
+
     if k_blob:
         print >> out, k_blob
     else:

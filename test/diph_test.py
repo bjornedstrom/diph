@@ -30,7 +30,8 @@ class DiphTest(unittest.TestCase):
 * TODO do something else
 """
 
-        self.A_merge_conflict = """?k AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAeoneUUjCImyyNqdxLNf6q9BWEd+VRkXtJqiWfgqNIWQ==
+        self.A_merge_conflict = """?? diph1
+?k AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAeoneUUjCImyyNqdxLNf6q9BWEd+VRkXtJqiWfgqNIWQ==
 ?c 0 tMnG8X9HcdWcSQ==
 <<<<<<<
 ?c 3000 Kys7oi0mb49hhp0yW9/85WLVkbM=

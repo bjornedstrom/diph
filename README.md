@@ -39,6 +39,7 @@ Consider a file `P_1` and a subsequent change of the file `P_2`
 On the first usage of diph, `P_1` is encrypted to `C_1`:
 
     $ diph encrypt P_1 | tee C_1
+    ?? diph1
     ?k yeC+cBzWI20smp3xgQttP/hLjo2V/HcDvlx3t/+suyc70zwLz2GbX1n6yyopl+R7jIF/ZAUnlmIeu4Tw7tjemQ==
     ?c 0 WRd1hwIo2y/fpA==
     ?c 1000 wHIvxLDTRA2pot/4w5R/T+k2NS0=
