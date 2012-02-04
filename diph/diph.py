@@ -148,8 +148,16 @@ def crypt_ctr(aes, nonce, cnt, buf):
     return xor_string(buf, stream)
 
 
-# TODO (bjorn): Document this.
 def transform(from_seq, to_seq, pre_func, post_func):
+    """Transform map(pre_func, from_seq) to to_seq, keeping the
+       structure of from_seq by applying post_func to modifications.
+
+       transform([(0, 'a'), (1, 'b'), (2, 'c')],
+                 'acd',
+                 lambda T: T[1],
+                 lambda s: (None, s)) -> [(0, 'a'), (2, 'c'), (None, 'd')]
+    """
+
     result = from_seq[:]
     while True:
         a = map(pre_func, result)
