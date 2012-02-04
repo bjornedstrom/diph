@@ -24,11 +24,9 @@
 
 import base64
 import difflib
-import getpass
 import hashlib
 import hmac
 import math
-import os
 import struct
 import sys
 
@@ -60,13 +58,11 @@ def hmac_sha1(key, message):
 
 
 def pbkdf2(hmacfunc, password, salt, iterations, derivedlen):
-    hLen = len(hmacfunc('', '')) # digest size
-    l = int(math.ceil(derivedlen / float(hLen)))
-    r = derivedlen - (l - 1) * hLen
-    def F(P, S, c, i):
+
+    def func(P, S, c, i):
         U_prev = hmacfunc(P, S + struct.pack('>L', i))
         res = U_prev
-        for cc in xrange(2, c+1):
+        for cc in xrange(2, c + 1):
             U_c = hmacfunc(P, U_prev)
             res = xor_string(res, U_c)
             U_prev = U_c
@@ -74,7 +70,7 @@ def pbkdf2(hmacfunc, password, salt, iterations, derivedlen):
     tmp = ''
     i = 1
     while True:
-        tmp += F(password, salt, iterations, i)
+        tmp += func(password, salt, iterations, i)
         if len(tmp) > derivedlen:
             break
         i += 1
@@ -134,7 +130,6 @@ def encrypt_blob(password, bytes):
 
 def crypt_ctr(aes, nonce, cnt, buf):
     # TODO: This implementation is pretty slow.
-    res = []
     L = len(buf)
     assert L < AES_KEY_SIZE * CTR_STEP, 'line too long'
     stream = []
