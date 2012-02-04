@@ -26,7 +26,6 @@ import base64
 import difflib
 import hashlib
 import hmac
-import math
 import struct
 import sys
 
