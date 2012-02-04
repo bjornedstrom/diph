@@ -57,6 +57,7 @@ def hmac_sha1(key, message):
 
 
 def pbkdf2(hmacfunc, password, salt, iterations, derivedlen):
+    """Reference implementation of PKBDF2 from PKCS5."""
 
     def func(P, S, c, i):
         U_prev = hmacfunc(P, S + struct.pack('>L', i))
@@ -77,6 +78,11 @@ def pbkdf2(hmacfunc, password, salt, iterations, derivedlen):
 
 
 def cbc_encrypt(func, bytes, blocksize):
+    """The CBC mode. The randomy generated IV is prefixed to the
+    ciphertext.  'func' is a function that encrypts bytes in ECB
+    mode. 'bytes' is the plaintext. 'blocksize' is the block size of
+    the cipher.
+    """
     assert len(bytes) % blocksize == 0
 
     IV = urandom(blocksize)
@@ -96,6 +102,7 @@ def cbc_encrypt(func, bytes, blocksize):
 
 
 def cbc_decrypt(func, bytes, blocksize):
+    """See cbc_encrypt."""
     assert len(bytes) % blocksize == 0
 
     IV = bytes[0:blocksize]
@@ -179,6 +186,17 @@ def transform(from_seq, to_seq, pre_func, post_func):
 
 # TODO (bjorn): Document this better.
 def encrypt(password, cur, old, decrypt=False, out=sys.stdout):
+    """The main encryption routine in diph.
+
+       cur is a buffer for the whole content of the plain text of the
+       current version of the file. cur is unused when decrypting, and
+       may then be None.
+
+       old is a buffer for the the old cipher text. This may be the
+       empty string of no old cipher text exists or you wish to
+       re-encrypt the file.
+    """
+
     key = urandom(AES_KEY_SIZE)
     nonce = urandom(AES_KEY_SIZE)
     aes = AES.new(key)
@@ -243,8 +261,12 @@ def encrypt(password, cur, old, decrypt=False, out=sys.stdout):
 
 
 def decrypt(password, buf, out=sys.stdout):
+    """Decrypt a file.
+    """
     return encrypt(password, None, buf, decrypt=True, out=out)
 
 
 def encrypt_first(password, buf, out=sys.stdout):
+    """Encrypt a file that has not been encrypted before.
+    """
     return encrypt(password, buf, '', out=out)
