@@ -134,17 +134,21 @@ def encrypt_blob(password, bytes):
     return salt + cbc_encrypt(aes.encrypt, bytes, AES_KEY_SIZE)
 
 
+# http://www.ietf.org/rfc/rfc3686.txt
 def crypt_ctr(aes, nonce, cnt, buf):
     # TODO: This implementation is pretty slow.
     L = len(buf)
     assert L < AES_KEY_SIZE * CTR_STEP, 'line too long'
     stream = []
     i = 0
-    ctr_fmt = '%%0%dd' % (AES_KEY_SIZE,)
     while i < L:
-        stream.append(aes.encrypt(xor_string(nonce, ctr_fmt % cnt)))
+        ctr_block = ('\x00' * 8) + struct.pack('!Q', cnt)
+        #assert len(ctr_block) == AES_KEY_SIZE
+
+        stream.append(aes.encrypt(xor_string(nonce, ctr_block)))
         cnt += 1
-        i += AES_KEY_SIZE
+        i += 16 #AES_KEY_SIZE
+
     stream = ''.join(stream)
     return xor_string(buf, stream)
 
