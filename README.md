@@ -91,6 +91,22 @@ to you:
   content is.
 * diph does not currently make any attempt to encrypt the file name.
 
+## Managing Counters
+
+The main issue when dealing with diph is to make sure that counters
+(as in the CTR block cipher mode) are not reused. diph handles the
+case where lines from the end of file are removed from the plain text,
+and subsequently added.
+
+To give control to the user (you) diph also supports a counter pragma
+that can be added anywhere in your plain text file, like so (case but can appear anywhere on a line):
+
+    #diph ctr 53000
+
+This means that when the file is encrypted, diph will start all new
+modifications in the file (compared to the previous version) at
+minimum counter 53000.
+
 ## History / Rationale
 
 diph is written by Björn Edström. I have written several
