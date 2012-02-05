@@ -103,6 +103,12 @@ class DiphTest(unittest.TestCase):
 ?c 2000 PRCsa/6S57O0rn2tLM49kO/Wq0lQ8SgehA==
 """
 
+        self.A_pragma = """TODO list
+* TODO do something
+#diph ctr 5000
+* TODO do something else
+"""
+
     def test_urandom(self):
         self.assertEquals('\x00'*16, diph.urandom(16))
 
@@ -199,6 +205,13 @@ class DiphTest(unittest.TestCase):
                 c, cnt, ciph = line.split()
                 if cnt in counters:
                     self.assertEquals(counters[cnt], ciph)
+
+    def test_pragma(self):
+        out = StringIO.StringIO()
+        diph.encrypt_first('foo', self.A_pragma, out=out)
+        cipher_text_1 = out.getvalue()
+
+        self.assertTrue('?m 9000' in cipher_text_1)
 
 
 if __name__ == '__main__':

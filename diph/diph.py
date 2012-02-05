@@ -210,7 +210,13 @@ def encrypt(password, cur, old, decrypt=False, out=sys.stdout):
     plain_data = []
     for line in cur.split('\n'):
         if line:
-            plain_data.append(line + '\n')
+            # Pragmas
+            if line.startswith('#diph'):
+                fields = line.split()
+                if fields[1] == 'ctr':
+                    max_cnt = int(fields[2])
+            else:
+                plain_data.append(line + '\n')
 
     # This is the clever part.
     ctr_data = transform(old_ctr_data, plain_data, lambda c: c[1], lambda c: (None, c))
