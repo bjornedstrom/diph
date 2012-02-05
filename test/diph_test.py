@@ -63,22 +63,6 @@ class CryptoTest(unittest.TestCase):
         finally:
             diph.AES_KEY_SIZE = 16
 
-    # http://www.ietf.org/rfc/rfc3602
-    def test_aes_cbc(self):
-        # Case #1: Encrypting 16 bytes (1 block) using AES-CBC with
-        # 128-bit key
-        oldurandom = diph.urandom
-        diph.urandom = lambda n: HH('3dafba429d9eb430b422da802c9fac41')
-        try:
-            aes = diph.AES.new(HH('06a9214036b8a15b512e03d534120006'))
-            ciph = diph.cbc_encrypt(aes.encrypt, 'Single block msg', 16)
-
-            self.assertEquals(HH('e353779c1079aeb82708942dbe77181a'), ciph[16:])
-            plain = diph.cbc_decrypt(aes.decrypt, ciph, 16)
-            self.assertEquals('Single block msg', plain)
-        finally:
-            diph.urandom = oldurandom
-
 class DiphTest(unittest.TestCase):
     def setUp(self):
         diph.urandom = lambda n: '\x00' * n
@@ -104,7 +88,7 @@ class DiphTest(unittest.TestCase):
 """
 
         self.A_merge_conflict = """?? diph1
-?k AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAeoneUUjCImyyNqdxLNf6q9BWEd+VRkXtJqiWfgqNIWQ==
+?k AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA61GZm/FjVVhM0OJsYtuNZRWUW+qPN0zibMV6sXmy+wQ==
 ?c 0 MqYPm8/mRUj8Rg==
 <<<<<<<
 ?c 3000 gsfiPpVjik15vUvVueYvmvfcU5o=

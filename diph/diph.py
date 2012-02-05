@@ -35,6 +35,7 @@ import Crypto.Cipher.AES as AES
 PBKDF2_ROUNDS = 2000
 CTR_STEP = 1000
 AES_KEY_SIZE = 16
+CTR_BLOCK_SIZE = 16
 
 
 def urandom(n):
@@ -77,61 +78,21 @@ def pbkdf2(hmacfunc, password, salt, iterations, derivedlen):
     return tmp[0:derivedlen]
 
 
-def cbc_encrypt(func, bytes, blocksize):
-    """The CBC mode. The randomy generated IV is prefixed to the
-    ciphertext.  'func' is a function that encrypts bytes in ECB
-    mode. 'bytes' is the plaintext. 'blocksize' is the block size of
-    the cipher.
-    """
-    assert len(bytes) % blocksize == 0
-
-    IV = urandom(blocksize)
-    assert len(IV) == blocksize
-
-    ciphertext = IV
-    for block_index in xrange(len(bytes) / blocksize):
-        xored = xor_string(bytes, IV)
-        enc = func(xored)
-
-        ciphertext += enc
-        IV = enc
-        bytes = bytes[blocksize:]
-
-    assert len(ciphertext) % blocksize == 0
-    return ciphertext
-
-
-def cbc_decrypt(func, bytes, blocksize):
-    """See cbc_encrypt."""
-    assert len(bytes) % blocksize == 0
-
-    IV = bytes[0:blocksize]
-    bytes = bytes[blocksize:]
-
-    plaintext = ''
-    for block_index in xrange(len(bytes) / blocksize):
-        temp = func(bytes[0:blocksize])
-        temp2 = xor_string(temp, IV)
-        plaintext += temp2
-        IV = bytes[0:blocksize]
-        bytes = bytes[blocksize:]
-
-    assert len(plaintext) % blocksize == 0
-    return plaintext
-
-
 def decrypt_blob(password, bytes):
-    salt, bytes = bytes[:AES_KEY_SIZE], bytes[AES_KEY_SIZE:]
+    nonce, salt, bytes = bytes[:CTR_BLOCK_SIZE], \
+        bytes[CTR_BLOCK_SIZE:CTR_BLOCK_SIZE+AES_KEY_SIZE], \
+        bytes[CTR_BLOCK_SIZE+AES_KEY_SIZE:]
     key = pbkdf2(hmac_sha1, password, salt, PBKDF2_ROUNDS, AES_KEY_SIZE)
     aes = AES.new(key)
-    return cbc_decrypt(aes.decrypt, bytes, AES_KEY_SIZE)
+    return crypt_ctr(aes, nonce, 1, bytes)
 
 
 def encrypt_blob(password, bytes):
+    nonce = urandom(CTR_BLOCK_SIZE)
     salt = urandom(AES_KEY_SIZE)
     key = pbkdf2(hmac_sha1, password, salt, PBKDF2_ROUNDS, AES_KEY_SIZE)
     aes = AES.new(key)
-    return salt + cbc_encrypt(aes.encrypt, bytes, AES_KEY_SIZE)
+    return nonce + salt + crypt_ctr(aes, nonce, 1, bytes)
 
 
 # http://www.ietf.org/rfc/rfc3686.txt
@@ -142,12 +103,12 @@ def crypt_ctr(aes, nonce, cnt, buf):
     stream = []
     i = 0
     while i < L:
-        ctr_block = ('\x00' * 8) + struct.pack('!Q', cnt)
-        #assert len(ctr_block) == AES_KEY_SIZE
+        ctr_block = ('\x00' * (CTR_BLOCK_SIZE - 8)) + struct.pack('!Q', cnt)
+        assert len(ctr_block) == CTR_BLOCK_SIZE
 
         stream.append(aes.encrypt(xor_string(nonce, ctr_block)))
         cnt += 1
-        i += 16 #AES_KEY_SIZE
+        i += CTR_BLOCK_SIZE
 
     stream = ''.join(stream)
     return xor_string(buf, stream)
@@ -202,7 +163,7 @@ def encrypt(password, cur, old, decrypt=False, out=sys.stdout):
     """
 
     key = urandom(AES_KEY_SIZE)
-    nonce = urandom(AES_KEY_SIZE)
+    nonce = urandom(CTR_BLOCK_SIZE)
     aes = AES.new(key)
     ctr_data = []
     k_blob = None
