@@ -211,8 +211,9 @@ def encrypt(password, cur, old, decrypt=False, out=sys.stdout):
     for line in cur.split('\n'):
         if line:
             # Pragmas
-            if line.startswith('#diph'):
+            if '#diph' in line:
                 fields = line.split()
+                fields = fields[fields.index('#diph'):]
                 if fields[1] == 'ctr':
                     max_cnt = int(fields[2])
             else:

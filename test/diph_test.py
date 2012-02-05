@@ -105,7 +105,7 @@ class DiphTest(unittest.TestCase):
 
         self.A_pragma = """TODO list
 * TODO do something
-#diph ctr 5000
+   /* #diph ctr 5000 */
 * TODO do something else
 """
 
