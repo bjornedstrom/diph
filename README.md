@@ -76,6 +76,11 @@ To encrypt a file:
 The file is encrypted with a random key that is PBKDF2-protected in
 the top of the cipher text.
 
+### Specification
+
+It is recommended that you read the specification. See the `doc`
+directory.
+
 ## Weaknesses
 
 diph has the following weaknesses, that may or may not be acceptable
@@ -91,7 +96,7 @@ to you:
   content is.
 * diph does not currently make any attempt to encrypt the file name.
 
-## Managing Counters
+### Managing Counters
 
 The main issue when dealing with diph is to make sure that counters
 (as in the CTR block cipher mode) are not reused. diph handles the
@@ -99,7 +104,8 @@ case where lines from the end of file are removed from the plain text,
 and subsequently added.
 
 To give control to the user (you) diph also supports a counter pragma
-that can be added anywhere in your plain text file, like so (case but can appear anywhere on a line):
+that can be added anywhere in your plain text file, like so
+(case-sensitive but can appear anywhere on a line):
 
     #diph ctr 53000
 

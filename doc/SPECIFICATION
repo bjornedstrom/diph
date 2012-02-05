@@ -1,0 +1,89 @@
+diph version 1 specification [DRAFT 1]
+Björn Edström <be@bjrn.se>
+5 Feb, 2012
+
+Cryptygraphic Constants
+-----------------------
+
+By default diph uses an AES key size of 16 (128 bits) and a CTR block
+size of 16, though these constants can easily be changed.
+
+AES_KEY_SIZE := 16
+CTR_BLOCK_SIZE := 16
+
+Cryptographic Primitives
+------------------------
+
+diph uses AES-CTR similar to RFC 3686.
+
+AES-CTR(key, nonce, base_ctr, plain) = xor(plain, stream(key, nonce, base_ctr))
+block(key, nonce, ctr) := AES(key, xor(nonce, ctr)), where ctr is in big endian
+stream(k, n, base) = block(k, n, base) || block(k, n, base+1) || ...
+
+diph also uses PBKDF2 from PKCS #5 v2.0, using HMAC-SHA1 and default
+iteration count of 2000.
+
+File Format
+-----------
+
+A diph version 1 encrypted file is line based where each line begins
+with '?'. Lines that do not begin with '?' are written out verbatim.
+
+A typical file looks like:
+
+    ?? diph1
+    ?k AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA61GZm/FjVVhM0OJsYtuNZRWUW+qPN0zibMV6sXmy+wQ==
+    ?c 0 MqYPm8/mRUj8Rg==
+    ?c 4000 f4W1l5F378cjbTTMkOcXOebxxgUiJbkk9Cw53EYSmPuT/Q==
+    ?c 2000 PRCsa/6S57O0rn2tLM49kO/Wq0lQ8SgehA==
+    ?m 5000
+
+Each line has space separated fields and the first field indicate the
+contents of the remaining fields.
+
+??: Magic: This is the magic marker and the first field will always be
+the string "diph" for this version.
+
+?k: Key blob: The first (and only) field contains the PBKDF2 protected
+decryption key for the actual contents of the file. This field is known as the KEY-BLOB and is described further below.
+
+?c: Cipher text: The two fields are together known as CIPHER-TEXT and
+is described further below.
+
+?m: Modifier: This can be thought of as a ?c line but without an
+associated cipher text. It is used to modify the counter.
+
+Key Blob
+--------
+
+Decrypting KEY-BLOB has one input and two outputs:
+
+[INPUT] password := The user specified password the blob is protected
+with.
+
+[OUTPUT] master-key := The key (of length AES_KEY_SIZE) that protects
+the contents of the diph encrypted file.
+
+[OUTPUT] master-nonce := The nonce (of length CTR_BLOCK_SIZE) used
+together with master-key to protect the contents of the diph encrypted
+file.
+
+The KEY-BLOB has the following format:
+
+nonce := A random string of CTR_BLOCK_SIZE bytes.
+salt := A random string of AES_KEY_SIZE bytes.
+key-material := master-key || master-nonce
+K = PBKDF2(HMAC-SHA1, password, salt)
+KEY-BLOB := base64(nonce || salt || AES-CTR(K, nonce, 1, key-material))
+
+Cipher Text
+-----------
+
+Decrypting CIPHER-TEXT has several inputs and one output:
+
+[INPUT] master-key
+[INPUT] master-nonce
+[OUTPUT] plain-text
+[OUTPUT] counter
+
+CIPHER-TEXT := counter || " " || base64(AES-CTR(master-key, master-nonce, counter, plain-text))
