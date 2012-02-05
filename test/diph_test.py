@@ -76,6 +76,11 @@ class DiphTest(unittest.TestCase):
 * TODO do something else
 * TODO fix the thing
 """
+        self.A_remove = """TODO list
+"""
+        self.A_remove_append = """TODO list
+* DONE added
+"""
 
         self.A_change = """TODO list
 * DONE do something
@@ -152,6 +157,49 @@ class DiphTest(unittest.TestCase):
 >>>>>>>
 * TODO do something else
 """, plain_text)
+
+    def test_no_counter_reuse_on_removal(self):
+        """Removing lines from the end of the file makes it easy to
+        reuse counters. Test that.
+        """
+
+        counters = {}
+
+        out = StringIO.StringIO()
+        diph.encrypt_first('foo', self.A, out=out)
+        cipher_text_1 = out.getvalue()
+
+        #print cipher_text_1
+
+        for line in cipher_text_1.split('\n'):
+            if line.startswith('?c'):
+                c, cnt, ciph = line.split()
+                counters[cnt] = ciph
+
+        out = StringIO.StringIO()
+        diph.encrypt('foo', self.A_remove, cipher_text_1, out=out)
+        cipher_text_2 = out.getvalue()
+
+        #print cipher_text_2
+
+        for line in cipher_text_2.split('\n'):
+            if line.startswith('?c'):
+                c, cnt, ciph = line.split()
+                if cnt in counters:
+                    self.assertEquals(counters[cnt], ciph)
+
+        out = StringIO.StringIO()
+        diph.encrypt('foo', self.A_remove_append, cipher_text_2, out=out)
+        cipher_text_3 = out.getvalue()
+
+        #print cipher_text_3
+
+        for line in cipher_text_3.split('\n'):
+            if line.startswith('?c'):
+                c, cnt, ciph = line.split()
+                if cnt in counters:
+                    self.assertEquals(counters[cnt], ciph)
+
 
 if __name__ == '__main__':
     unittest.main()

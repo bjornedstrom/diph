@@ -199,6 +199,10 @@ def encrypt(password, cur, old, decrypt=False, out=sys.stdout):
                 if decrypt:
                     print >> out, plain,
 
+            elif fields[0] == '?m':
+                cnt = int(fields[1])
+                max_cnt = max(max_cnt, cnt)
+
     # If this was decrypt-only, we are done.
     if decrypt:
         return
@@ -219,6 +223,8 @@ def encrypt(password, cur, old, decrypt=False, out=sys.stdout):
             ctr_data[i] = (cnt, ctr_data[i][1])
             cnt += CTR_STEP
 
+    cnt_mod = cnt
+
     # Output
     print >> out, '?? diph1'
 
@@ -229,6 +235,8 @@ def encrypt(password, cur, old, decrypt=False, out=sys.stdout):
 
     for cnt, plain in ctr_data:
         print >> out, '?c', cnt, base64.b64encode(crypt_ctr(aes, nonce, cnt, plain))
+
+    print >> out, '?m', cnt_mod
 
 
 def decrypt(password, buf, out=sys.stdout):
